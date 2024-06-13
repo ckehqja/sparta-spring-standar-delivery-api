@@ -8,7 +8,7 @@ import lombok.Getter;
 
 @Entity
 @Getter
-public class Food {
+public class Food implements Common{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

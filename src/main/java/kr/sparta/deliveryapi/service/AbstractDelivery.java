@@ -5,11 +5,12 @@ import java.time.format.DateTimeFormatter;
 
 import com.sun.nio.sctp.IllegalReceiveException;
 
+import kr.sparta.deliveryapi.model.Common;
 import kr.sparta.deliveryapi.model.Delivery;
 import kr.sparta.deliveryapi.model.enumtype.DeliveryStatus;
 import kr.sparta.deliveryapi.repository.DeliveryRepository;
 
-public abstract class AbstractDelivery<T> implements Deliverable<T> {
+public abstract class AbstractDelivery<T extends Common> implements Deliverable<T> {
 	protected final DeliveryRepository deliveryRepository;
 
 	protected AbstractDelivery(DeliveryRepository deliveryRepository) {
