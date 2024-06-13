@@ -2,6 +2,7 @@ package kr.sparta.deliveryapi.service;
 
 import com.sun.nio.sctp.IllegalReceiveException;
 import kr.sparta.deliveryapi.model.Delivery;
+import kr.sparta.deliveryapi.model.Parcel;
 import kr.sparta.deliveryapi.model.enumtype.DeliveryStatus;
 import kr.sparta.deliveryapi.model.Food;
 import kr.sparta.deliveryapi.model.enumtype.ItemType;
@@ -14,7 +15,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Service
-public class FoodDeliveryService {
+public class FoodDeliveryService implements Deliverable<Food>{
     private final FoodRepository foodRepository;
     private final DeliveryRepository deliveryRepository;
 
@@ -23,36 +24,40 @@ public class FoodDeliveryService {
         this.deliveryRepository = deliveryRepository;
     }
 
-    public Delivery deliverFood(Long foodId) {
-        final Food food = foodRepository.findById(foodId)
-                .orElseThrow(IllegalArgumentException::new);
+    private String generateTrackingNo(String description) {
+        return LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS"))
+                + String.valueOf(description.hashCode()).substring(0, 4);
+    }
+
+    @Override
+    public Delivery deliver(Long id) {
+        final Food food = foodRepository.findById(id)
+            .orElseThrow(IllegalArgumentException::new);
 
         final String trackingNo = generateTrackingNo(food.getName());
         final Delivery delivery = Delivery.builder()
-                .trackingNumber(trackingNo)
-                .itemType(ItemType.FOOD)
-                .status(DeliveryStatus.SHIPPED)
-                .itemId(food.getId())
-                .name(food.getName())
-                .build();
+            .trackingNumber(trackingNo)
+            .itemType(ItemType.FOOD)
+            .status(DeliveryStatus.SHIPPED)
+            .itemId(food.getId())
+            .name(food.getName())
+            .build();
 
         deliveryRepository.save(delivery);
 
         return delivery;
     }
 
-    private String generateTrackingNo(String description) {
-        return LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS"))
-                + String.valueOf(description.hashCode()).substring(0, 4);
-    }
-
-    public DeliveryStatus trackFood(String trackingNumber) {
+    @Override
+    public DeliveryStatus track(String trackingNumber) {
         return deliveryRepository.findById(trackingNumber)
-                .map(Delivery::getStatus)
-                .orElseThrow(IllegalReceiveException::new);
+            .map(Delivery::getStatus)
+            .orElseThrow(IllegalReceiveException::new);
     }
 
-    public List<Food> getAllFoods() {
+    @Override
+    public List<Food> getAll() {
         return foodRepository.findAll();
     }
+
 }
